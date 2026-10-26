@@ -131,7 +131,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     const q = searchQuery.toLowerCase();
     return p.fullName.toLowerCase().includes(q) ||
            p.phone.includes(q) ||
-           p.mbtiType.toLowerCase().includes(q);
+           p.mbtiType.toLowerCase().includes(q) ||
+           (p.partnerData?.partnerName && p.partnerData.partnerName.toLowerCase().includes(q));
   });
 
   if (!isOpen) return null;
@@ -263,7 +264,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Cari nama peserta, no HP, atau tipe..."
+                        placeholder="Cari nama peserta, nama pasangan, no HP..."
                         className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                       />
                     </div>
@@ -293,20 +294,39 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                         const meta = PERSONALITY_METAS[p.mbtiType];
                         const cleanP = p.phone.replace(/[^0-9]/g, '');
                         const waNum = cleanP.startsWith('0') ? '62' + cleanP.slice(1) : cleanP;
+                        const isCouple = p.testMode === 'couple' && !!p.partnerData;
+
+                        const waText = isCouple ? encodeURIComponent(
+                          `Halo Kak *${p.fullName}*, berikut Laporan Lengkap 22 Bab Analisis Pasangan Psikometri Carl Jung 16 Tipe Pak GuruAI untuk Kakak & Pasangan (*${p.partnerData?.partnerName}*).\n\n📌 Tipe Anda: *${p.mbtiType}* (${meta?.name})\n📌 Status: *${p.partnerData?.relationshipStatus}*\n\nBerkas PDF resmi siap kami kirimkan.\n\n@copyright by. Pak GuruAI`
+                        ) : encodeURIComponent(
+                          `Halo Kak *${p.fullName}*, berikut laporan lengkap psikometri Carl Jung 16 Tipe Pak GuruAI untuk tipe *${p.mbtiType}* (${meta?.name})...\n\n@copyright by. Pak GuruAI`
+                        );
 
                         return (
                           <div
                             key={p.id}
                             className="bg-slate-900/80 border border-slate-800 hover:border-slate-700 rounded-2xl p-4 sm:p-5 transition flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
                           >
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2.5">
+                            <div className="space-y-1.5">
+                              <div className="flex flex-wrap items-center gap-2">
                                 <span className="font-mono text-xs font-black px-2.5 py-0.5 rounded-lg bg-indigo-600 text-white">
                                   {p.mbtiType}
                                 </span>
                                 <h4 className="text-sm font-bold text-white">
                                   {p.fullName}
                                 </h4>
+                                
+                                {isCouple ? (
+                                  <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-rose-950 text-rose-300 border border-rose-800 flex items-center gap-1">
+                                    <span>👥 Pasangan: {p.partnerData?.partnerName}</span>
+                                    <span className="text-rose-400/80">({p.partnerData?.relationshipStatus})</span>
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-slate-700">
+                                    👤 Individu
+                                  </span>
+                                )}
+
                                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
                                   p.status === 'sent'
                                     ? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
@@ -316,10 +336,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                                 </span>
                               </div>
 
-                              <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400 pt-1">
+                              <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400 pt-0.5">
                                 <span>Lahir: {p.birthDate}</span>
                                 <span className="text-slate-600">•</span>
                                 <span className="font-mono text-emerald-400">WA: {p.phone}</span>
+                                {isCouple && p.partnerData?.partnerType && p.partnerData.partnerType !== 'UNKNOWN' && (
+                                  <>
+                                    <span className="text-slate-600">•</span>
+                                    <span className="text-rose-300">Tipe Pasangan: {p.partnerData.partnerType}</span>
+                                  </>
+                                )}
                                 <span className="text-slate-600">•</span>
                                 <span className="text-slate-500">
                                   {new Date(p.createdAt).toLocaleDateString('id-ID', {
@@ -339,9 +365,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                               </button>
 
                               <a
-                                href={`https://wa.me/${waNum}?text=${encodeURIComponent(
-                                  `Halo Kak *${p.fullName}*, berikut laporan lengkap psikometri Carl Jung 16 Tipe Pak GuruAI untuk tipe *${p.mbtiType}* (${meta?.name})...\n\n@copyright by. Pak GuruAI`
-                                )}`}
+                                href={`https://wa.me/${waNum}?text=${waText}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={() => updateParticipantStatus(p.id, 'sent')}

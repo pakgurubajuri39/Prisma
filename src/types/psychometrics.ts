@@ -114,3 +114,20 @@ export interface CompatibilityInsight {
   potensiGesekan: string;
   tipsPendekatan: string;
 }
+
+export interface PartnerDetails {
+  partnerName: string;
+  partnerBirthDate?: string;
+  partnerType?: MBTIType | 'UNKNOWN';
+  relationshipStatus?: 'Pacaran' | 'Tunangan' | 'Menikah' | 'Menuju Pernikahan' | 'Teman Dekat';
+  dilemma?: string;
+}
+
+export interface RegistrationFormData {
+  fullName: string;
+  birthDate: string;
+  phone: string;
+  testMode: 'individual' | 'couple';
+  partnerData?: PartnerDetails;
+}
+

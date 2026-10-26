@@ -829,3 +829,148 @@ export function getCompatibilityInsight(typeA: MBTIType, typeB: MBTIType): Compa
     tipsPendekatan: `Latih mendengarkan aktif. Validasi niat baik pasangan sebelum membedah teknis atau solusinya.`
   };
 }
+
+export interface CoupleDetailedAnalysis {
+  userType: MBTIType;
+  partnerName: string;
+  partnerType?: MBTIType | 'UNKNOWN';
+  relationshipStatus: string;
+  dilemma: string;
+  harmonyScore: number;
+  harmonyLevel: 'Harmoni Sangat Tinggi' | 'Harmoni Tinggi' | 'Saling Melengkapi' | 'Tantangan Bertumbuh';
+  dynamicArchetype: string;
+  coreSynergy: string;
+  blindSpotsAndFriction: string[];
+  communicationRules: string[];
+  actionSteps: { tahap: number; judul: string; aksi: string }[];
+}
+
+export function getCoupleDetailedAnalysis(
+  userType: MBTIType,
+  partnerName: string,
+  partnerType: MBTIType | 'UNKNOWN' = 'UNKNOWN',
+  relationshipStatus = 'Pacaran',
+  dilemma = 'Gaya komunikasi berbeda'
+): CoupleDetailedAnalysis {
+  const metaUser = PERSONALITY_METAS[userType];
+  const cleanPartnerName = partnerName.trim() || 'Pasanganmu';
+
+  if (partnerType && partnerType !== 'UNKNOWN') {
+    const metaPartner = PERSONALITY_METAS[partnerType];
+    const insight = getCompatibilityInsight(userType, partnerType);
+
+    const isMirror = userType === partnerType;
+    const isComplementary = metaUser.bestMatches.includes(partnerType);
+    const isGrowthChallenge = metaUser.challengingMatches.includes(partnerType);
+
+    let archetype = `Sinergi ${metaUser.role} & ${metaPartner.role}`;
+    if (isMirror) archetype = `Koneksi Cermin Jiwa (${metaUser.name})`;
+    else if (isComplementary) archetype = `Pasangan Emas Komplementer (${userType} & ${partnerType})`;
+    else if (isGrowthChallenge) archetype = `Dinamika Pertumbuhan Katalis (${userType} & ${partnerType})`;
+
+    let level: CoupleDetailedAnalysis['harmonyLevel'] = 'Saling Melengkapi';
+    if (insight.skorKecocokan >= 90) level = 'Harmoni Sangat Tinggi';
+    else if (insight.skorKecocokan >= 80) level = 'Harmoni Tinggi';
+    else if (insight.skorKecocokan < 75) level = 'Tantangan Bertumbuh';
+
+    const blindSpots = [
+      `Perbedaan ritme memproses emosi: ${userType} (${metaUser.cognitiveFunctions.dominan}) cenderung memproses secara ${userType.startsWith('I') ? 'internal dalam hening' : 'ekspresif terbuka'}, sedangkan ${partnerName} memiliki ritme pemrosesan yang berbeda.`,
+      `Potensi benturan saat menghadapi konflik: kecenderungan ${userType.includes('T') ? 'mencari solusi logis cepat' : 'mencari validasi empati rasa'} dapat disalahartikan sebagai pengabaian.`,
+      `Ekspektasi tersirat seputar ${relationshipStatus.toLowerCase()}: menuntut pasangan membaca pikiran tanpa mengutarakan kebutuhan batin secara gamblang.`,
+      `Tantangan spesifik terkait ${dilemma.toLowerCase()}: kebiasaan reaktif di bawah tekanan stres yang memicu siklus defensif.`
+    ];
+
+    const commRules = [
+      `Beri jeda hening 10 menit saat tensi meningkat agar fungsi kognitif inferior tidak mengambil alih kendali emosi.`,
+      `Gunakan formula kalimat "Aku merasa... saat...", bukan "Kamu selalu membuatku...".`,
+      `Luangkan sesi 'Check-in Hati' 15 menit setiap pekan tanpa gangguan gawai untuk menyelaraskan harapan.`,
+      `Apresiasi 1 hal kecil yang telah dilakukan ${cleanPartnerName} sebelum mendiskusikan topik evaluasi.`
+    ];
+
+    const actionSteps = [
+      {
+        tahap: 1,
+        judul: 'Pahami Peta Batin Pasangan',
+        aksi: `Kenali bahwa cara ${cleanPartnerName} (${partnerType}) mencintai diekspresikan lewat ${metaPartner.cognitiveFunctions.dominan}, bukan sekadar kata-kata manis.`
+      },
+      {
+        tahap: 2,
+        judul: 'Redakan Titik Pemicu Utama',
+        aksi: `Fokus atasi isu "${dilemma}" dengan menetapkan kesepakatan bahwa perbedaan cara pandang adalah aset, bukan ancaman.`
+      },
+      {
+        tahap: 3,
+        judul: 'Bangun Ritual Keintiman Aman',
+        aksi: `Ciptakan ruang emosional bebas penghakiman di mana ${cleanPartnerName} merasa aman bercerita tanpa langsung dipotong solusi teknis.`
+      },
+      {
+        tahap: 4,
+        judul: 'Visi Bersama Jangka Panjang',
+        aksi: `Perjelas arah dan komitmen relasi kalian di fase ${relationshipStatus} dengan tujuan terukur yang disepakati berdua.`
+      }
+    ];
+
+    return {
+      userType,
+      partnerName: cleanPartnerName,
+      partnerType,
+      relationshipStatus,
+      dilemma,
+      harmonyScore: insight.skorKecocokan,
+      harmonyLevel: level,
+      dynamicArchetype: archetype,
+      coreSynergy: `${insight.sinergiUtama} Dalam hubungan ${relationshipStatus}, energi kalian memiliki daya dorong yang kuat jika saling melengkapi.`,
+      blindSpotsAndFriction: blindSpots,
+      communicationRules: commRules,
+      actionSteps
+    };
+  }
+
+  // Jika partnerType UNKNOWN: Analisis interpersonal mendalam berbasis gaya attachment tipe pengguna
+  const baseScore = userType.includes('F') ? 85 : 82;
+  return {
+    userType,
+    partnerName: cleanPartnerName,
+    partnerType: 'UNKNOWN',
+    relationshipStatus,
+    dilemma,
+    harmonyScore: baseScore,
+    harmonyLevel: 'Harmoni Tinggi',
+    dynamicArchetype: `Relasi Berpusat pada Arketipe ${metaUser.name}`,
+    coreSynergy: `Sebagai tipe ${userType} (${metaUser.name}), kamu membawa kesetiaan, kedalaman, dan prinsip yang kokoh ke dalam hubungan dengan ${cleanPartnerName}. Kamu mendambakan relasi yang bermakna dan bertumbuh secara otentik.`,
+    blindSpotsAndFriction: [
+      `Kecenderungan menahan kekecewaan di dalam hati agar tidak merusak keharmonisan, yang sewaktu-waktu bisa berubah menjadi sikap dingin.`,
+      `Memasang standar idealisme yang sangat tinggi terhadap ${cleanPartnerName} sehingga rentan merasa lelah emosional saat kenyataan tidak sesuai ekspektasi.`,
+      `Kesulitan meminta bantuan secara langsung karena terbiasa mandiri atau merasa harus menjadi penopang pasangan.`,
+      `Isu seputar "${dilemma}": siklus salah paham yang berulang karena masing-masing berasumsi tanpa verifikasi langsung.`
+    ],
+    communicationRules: [
+      `Ungkapkan perasaanmu lebih awal sebelum beban emosional menumpuk menjadi kepahitan.`,
+      `Ajak ${cleanPartnerName} berdiskusi santai di tempat netral saat sama-sama tidak lelah.`,
+      `Gunakan teknik cermin: ulangi apa yang baru saja disampaikan ${cleanPartnerName} untuk memastikan tidak ada miskonsepsi.`,
+      `Pisahkan antara 'masalah yang harus diselesaikan' dengan 'emosi yang hanya butuh didengarkan'.`
+    ],
+    actionSteps: [
+      {
+        tahap: 1,
+        judul: 'Transparansi Kebutuhan Batin',
+        aksi: `Bicarakan dengan jujur kepada ${cleanPartnerName} apa yang membuatmu merasa paling dihargai dan aman dalam fase ${relationshipStatus} ini.`
+      },
+      {
+        tahap: 2,
+        judul: 'Penyelarasan Ekspektasi',
+        aksi: `Bedah bersama dilema "${dilemma}" dengan menanyakan sudut pandang ${cleanPartnerName} tanpa menyela.`
+      },
+      {
+        tahap: 3,
+        judul: 'Ajak Pasangan Mengambil Tes',
+        aksi: `Sarankan ${cleanPartnerName} untuk juga menyelesaikan asesmen PRISMA-16™ agar matriks kecocokan kognitif kalian dapat dihitung dengan presisi 100%.`
+      },
+      {
+        tahap: 4,
+        judul: 'Komitmen Bertumbuh Bersama',
+        aksi: `Tetapkan satu kebiasaan sehat mingguan yang memperkuat ikatan batin kalian berdua tanpa distraksi pekerjaan.`
+      }
+    ]
+  };
+}

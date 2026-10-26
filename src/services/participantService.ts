@@ -3,7 +3,7 @@ import {
   query, orderBy, limit 
 } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
-import { MBTIType } from '../types/psychometrics';
+import { MBTIType, PartnerDetails } from '../types/psychometrics';
 
 export interface ParticipantRecord {
   id: string;
@@ -11,6 +11,8 @@ export interface ParticipantRecord {
   birthDate: string;
   phone: string;
   mbtiType: MBTIType;
+  testMode?: 'individual' | 'couple';
+  partnerData?: PartnerDetails;
   scores: {
     pctI: number;
     pctE: number;
@@ -34,6 +36,8 @@ export async function saveParticipantResult(data: {
   birthDate: string;
   phone: string;
   mbtiType: MBTIType;
+  testMode?: 'individual' | 'couple';
+  partnerData?: PartnerDetails;
   scores: any;
 }): Promise<string> {
   const participantId = `part_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
@@ -44,6 +48,8 @@ export async function saveParticipantResult(data: {
     birthDate: data.birthDate,
     phone: data.phone.trim(),
     mbtiType: data.mbtiType,
+    testMode: data.testMode || 'individual',
+    partnerData: data.partnerData,
     scores: data.scores,
     status: 'pending',
     createdAt: new Date().toISOString()

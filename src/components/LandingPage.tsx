@@ -2,17 +2,30 @@ import React, { useState } from 'react';
 import { 
   Sparkles, CheckCircle, ArrowRight, ShieldCheck, Heart, 
   Brain, Compass, Users, Star, Award, Lock, Clock, Flame, 
-  TrendingUp, Check, Zap, Target
+  TrendingUp, Check, Zap, Target, User, HeartHandshake, Info
 } from 'lucide-react';
+import { RegistrationFormData, MBTIType } from '../types/psychometrics';
 
 interface LandingPageProps {
-  onStartTest: (data: { fullName: string; birthDate: string; phone: string }) => void;
+  onStartTest: (data: RegistrationFormData) => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onStartTest }) => {
+  // Mode Selection: 'individual' vs 'couple'
+  const [testMode, setTestMode] = useState<'individual' | 'couple'>('individual');
+
+  // Data Diri
   const [fullName, setFullName] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [phone, setPhone] = useState('');
+
+  // Data Pasangan (khusus couple mode)
+  const [partnerName, setPartnerName] = useState('');
+  const [partnerBirthDate, setPartnerBirthDate] = useState('');
+  const [partnerType, setPartnerType] = useState<MBTIType | 'UNKNOWN'>('UNKNOWN');
+  const [relationshipStatus, setRelationshipStatus] = useState<'Pacaran' | 'Tunangan' | 'Menikah' | 'Menuju Pernikahan' | 'Teman Dekat'>('Pacaran');
+  const [dilemma, setDilemma] = useState('Gaya komunikasi & cara bicara berbeda');
+
   const [errorMsg, setErrorMsg] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -30,8 +43,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartTest }) => {
       return;
     }
 
+    if (testMode === 'couple') {
+      if (!partnerName.trim()) {
+        setErrorMsg('Mohon isi nama lengkap pasanganmu untuk analisis relasi.');
+        return;
+      }
+    }
+
     setErrorMsg('');
-    onStartTest({ fullName, birthDate, phone });
+    onStartTest({
+      fullName,
+      birthDate,
+      phone,
+      testMode,
+      partnerData: testMode === 'couple' ? {
+        partnerName: partnerName.trim(),
+        partnerBirthDate: partnerBirthDate || undefined,
+        partnerType,
+        relationshipStatus,
+        dilemma
+      } : undefined
+    });
   };
 
   const scrollToForm = () => {
@@ -163,7 +195,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartTest }) => {
         <div className="bg-white rounded-3xl p-8 sm:p-10 shadow-xl border border-slate-200 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
           
-          <div className="text-center space-y-2 mb-8">
+          <div className="text-center space-y-2 mb-6">
             <span className="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700">
               Registrasi Akses Instrumen PRISMA-16™
             </span>
@@ -171,16 +203,74 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartTest }) => {
               Lengkapi Data untuk Memulai Tes
             </h3>
             <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto">
-              Setelah mengisi form di bawah ini, kamu langsung masuk ke 24 instrumen asesmen kognitif secara lengkap.
+              Pilih mode tes di bawah ini: uji potensi pribadimu atau analisis mendalam kompatibilitas hubungan bersama pasangan.
             </p>
           </div>
 
+          {/* Mode Selector: Pribadi vs Pasangan */}
+          <div className="mb-6 p-1.5 rounded-2xl bg-slate-100 border border-slate-200 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setTestMode('individual')}
+              className={`py-3 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition cursor-pointer ${
+                testMode === 'individual'
+                  ? 'bg-white text-indigo-700 shadow-sm border border-slate-200/80'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+              }`}
+            >
+              <User className="w-4 h-4 text-indigo-600" />
+              <span>Tes Pribadi (Individu)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTestMode('couple')}
+              className={`py-3 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition cursor-pointer relative ${
+                testMode === 'couple'
+                  ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+              }`}
+            >
+              <HeartHandshake className={`w-4 h-4 ${testMode === 'couple' ? 'text-white' : 'text-rose-500'}`} />
+              <span>Analisis Pasangan</span>
+              <span className={`text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 rounded-full ${
+                testMode === 'couple' ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-700'
+              }`}>
+                Cinta
+              </span>
+            </button>
+          </div>
+
+          {/* Mode Info Callout */}
+          {testMode === 'couple' ? (
+            <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-pink-50 via-rose-50 to-indigo-50 border border-pink-200/80 text-xs text-slate-700 space-y-1.5">
+              <div className="flex items-center gap-1.5 font-bold text-rose-700">
+                <Heart className="w-4 h-4 fill-rose-500 text-rose-500" />
+                <span>Modul Analisis Pasangan Akurat & Terpercaya (Carl Jung Typology)</span>
+              </div>
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                Asesmen ini akan membedah sinergi kognitif antara kamu dan pasangan, titik buta pemicu salah paham, cara berkomunikasi tanpa melukai, dan formula harmonisasi hubungan jangka panjang.
+              </p>
+            </div>
+          ) : (
+            <div className="mb-6 p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-100 text-xs text-indigo-900 flex items-center gap-2">
+              <Info className="w-4 h-4 text-indigo-600 shrink-0" />
+              <span>Memetakan arsitektur pikiran, zona jenius alami, manajemen stres, dan arah karir pribadi.</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-5">
             
+            {/* Header Data Peserta */}
+            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-800 pb-1 border-b border-slate-100">
+              <User className="w-4 h-4 text-indigo-600" />
+              <span>{testMode === 'couple' ? 'Data Dirimu' : 'Data Lengkap Peserta'}</span>
+            </div>
+
             {/* Nama Lengkap */}
             <div>
               <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-1.5">
-                Nama Lengkap <span className="text-rose-500">*</span>
+                Nama Lengkapmu <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
@@ -192,40 +282,143 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartTest }) => {
               />
             </div>
 
-            {/* Tanggal Lahir */}
-            <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-1.5">
-                Tanggal Lahir <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="date"
-                required
-                value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
-                className="w-full px-4 py-3.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
-              />
-              <span className="text-[11px] text-slate-400 mt-1 block">
-                Diperlukan untuk kalibrasi pemetaan fase perkembangan kedewasaan kognitif.
-              </span>
+            {/* Grid Tanggal Lahir & No HP */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-1.5">
+                  Tanggal Lahirmu <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  className="w-full px-4 py-3.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-1.5">
+                  Nomor WhatsApp Aktif <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="081234567890"
+                  className="w-full px-4 py-3.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                />
+              </div>
             </div>
 
-            {/* Nomor WhatsApp / HP */}
-            <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-1.5">
-                Nomor WhatsApp Aktif <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="tel"
-                required
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="Contoh: 081234567890 atau 6281234567890"
-                className="w-full px-4 py-3.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
-              />
-              <span className="text-[11px] text-slate-400 mt-1 block">
-                Nomor ini akan digunakan admin untuk mengirimkan berkas laporan lengkap PDF kamu.
-              </span>
-            </div>
+            {/* Bagian Khusus Analisis Pasangan */}
+            {testMode === 'couple' && (
+              <div className="pt-4 space-y-4 border-t border-slate-100 animate-in fade-in duration-200">
+                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-rose-700 pb-1 border-b border-rose-100">
+                  <Heart className="w-4 h-4 fill-rose-500 text-rose-500" />
+                  <span>Data Pasangan & Dinamika Hubungan</span>
+                </div>
+
+                {/* Nama Pasangan */}
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-1.5">
+                    Nama Pasangan <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={partnerName}
+                    onChange={(e) => setPartnerName(e.target.value)}
+                    placeholder="Contoh: Nadia Safitri"
+                    className="w-full px-4 py-3.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition"
+                  />
+                </div>
+
+                {/* Status Hubungan & Tanggal Lahir Pasangan */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-1.5">
+                      Status Hubungan Saat Ini
+                    </label>
+                    <select
+                      value={relationshipStatus}
+                      onChange={(e) => setRelationshipStatus(e.target.value as any)}
+                      className="w-full px-4 py-3.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition cursor-pointer"
+                    >
+                      <option value="Pacaran">Pacaran</option>
+                      <option value="Tunangan">Tunangan</option>
+                      <option value="Menikah">Menikah</option>
+                      <option value="Menuju Pernikahan">Menuju Pernikahan (Ta'aruf / Serius)</option>
+                      <option value="Teman Dekat">Teman Dekat / PDKT</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-1.5">
+                      Tanggal Lahir Pasangan (Opsional)
+                    </label>
+                    <input
+                      type="date"
+                      value={partnerBirthDate}
+                      onChange={(e) => setPartnerBirthDate(e.target.value)}
+                      className="w-full px-4 py-3.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition"
+                    />
+                  </div>
+                </div>
+
+                {/* Tipe MBTI Pasangan (Jika Tahu) */}
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-1.5">
+                    Tipe Kepribadian Pasangan (Jika Sudah Tahu)
+                  </label>
+                  <select
+                    value={partnerType}
+                    onChange={(e) => setPartnerType(e.target.value as any)}
+                    className="w-full px-4 py-3.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition cursor-pointer"
+                  >
+                    <option value="UNKNOWN">Belum Tahu (Biarkan Sistem Memetakan Berdasarkan Gaya Relasimu)</option>
+                    <option value="INTJ">INTJ - Sang Arsitek Strategis</option>
+                    <option value="INTP">INTP - Sang Logikawan Konseptual</option>
+                    <option value="ENTJ">ENTJ - Sang Komandan Visioner</option>
+                    <option value="ENTP">ENTP - Sang Inovator Pendebat</option>
+                    <option value="INFJ">INFJ - Sang Penasihat Visioner</option>
+                    <option value="INFP">INFP - Sang Mediator Idealis</option>
+                    <option value="ENFJ">ENFJ - Sang Protagonis Karismatik</option>
+                    <option value="ENFP">ENFP - Sang Penggerak Antusias</option>
+                    <option value="ISTJ">ISTJ - Sang Penjaga Integritas</option>
+                    <option value="ISFJ">ISFJ - Sang Pelindung Setia</option>
+                    <option value="ESTJ">ESTJ - Sang Eksekutif Teratur</option>
+                    <option value="ESFJ">ESFJ - Sang Pengasuh Harmonis</option>
+                    <option value="ISTP">ISTP - Sang Virtuoso Pragmatis</option>
+                    <option value="ISFP">ISFP - Sang Penjelajah Artistik</option>
+                    <option value="ESTP">ESTP - Sang Pengusaha Dinamis</option>
+                    <option value="ESFP">ESFP - Sang Penghibur Spontan</option>
+                  </select>
+                  <span className="text-[11px] text-slate-400 mt-1 block">
+                    Jika pasanganmu belum pernah tes, pilih "Belum Tahu", sistem tetap akan menganalisis dinamika attachment & komunikasi kalian.
+                  </span>
+                </div>
+
+                {/* Dilema / Tantangan Utama */}
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-1.5">
+                    Fokus atau Tantangan Utama Hubungan Saat Ini
+                  </label>
+                  <select
+                    value={dilemma}
+                    onChange={(e) => setDilemma(e.target.value)}
+                    className="w-full px-4 py-3.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition cursor-pointer"
+                  >
+                    <option value="Gaya komunikasi & cara bicara berbeda">Gaya komunikasi & cara bicara berbeda (sering salah paham)</option>
+                    <option value="Cara menangani emosi saat konflik">Cara menangani emosi saat konflik (satu diam, satu mengejar)</option>
+                    <option value="Penyelarasan visi masa depan & komitmen">Penyelarasan visi masa depan & komitmen jangka panjang</option>
+                    <option value="Keseimbangan waktu pribadi vs waktu berdua">Keseimbangan waktu pribadi vs waktu berkualitas berdua</option>
+                    <option value="Pengambilan keputusan & pembagian peran">Pengambilan keputusan finansial & pembagian peran hidup</option>
+                  </select>
+                </div>
+              </div>
+            )}
 
             {errorMsg && (
               <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs font-bold text-rose-700">
@@ -235,9 +428,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStartTest }) => {
 
             <button
               type="submit"
-              className="w-full py-4 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-black text-sm sm:text-base shadow-lg shadow-indigo-600/30 transition cursor-pointer flex items-center justify-center gap-2 mt-4"
+              className={`w-full py-4 rounded-xl text-white font-black text-sm sm:text-base shadow-lg transition cursor-pointer flex items-center justify-center gap-2 mt-4 ${
+                testMode === 'couple'
+                  ? 'bg-gradient-to-r from-rose-600 via-pink-600 to-indigo-600 hover:from-rose-700 hover:to-indigo-700 shadow-rose-600/30'
+                  : 'bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 shadow-indigo-600/30'
+              }`}
             >
-              <span>Lanjut Isi Instrumen Tes Lengkap</span>
+              <span>{testMode === 'couple' ? 'Lanjut Isi Instrumen Analisis Pasangan' : 'Lanjut Isi Instrumen Tes Lengkap'}</span>
               <ArrowRight className="w-5 h-5" />
             </button>
 

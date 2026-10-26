@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { MBTIType } from './types/psychometrics';
+import { MBTIType, RegistrationFormData } from './types/psychometrics';
 import { Navbar, ActiveTab } from './components/Navbar';
 import { LandingPage } from './components/LandingPage';
 import { AssessmentTest } from './components/AssessmentTest';
@@ -19,14 +19,10 @@ export default function App() {
   const [currentType, setCurrentType] = useState<MBTIType>('INFJ');
   const [isAdminOpen, setIsAdminOpen] = useState(false);
 
-  // Data pendaftaran peserta dari Landing Page
-  const [participantData, setParticipantData] = useState<{
-    fullName: string;
-    birthDate: string;
-    phone: string;
-  } | null>(null);
+  // Data pendaftaran peserta dari Landing Page (termasuk mode couple jika dipilih)
+  const [participantData, setParticipantData] = useState<RegistrationFormData | null>(null);
 
-  const handleStartTest = (data: { fullName: string; birthDate: string; phone: string }) => {
+  const handleStartTest = (data: RegistrationFormData) => {
     setParticipantData(data);
     setActiveTab('test');
     window.scrollTo({ top: 0, behavior: 'smooth' });

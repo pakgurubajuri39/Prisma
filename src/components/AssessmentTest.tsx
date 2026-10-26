@@ -1,16 +1,12 @@
 import React, { useState } from 'react';
 import { ASSESSMENT_QUESTIONS } from '../data/questions';
-import { MBTIType } from '../types/psychometrics';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { MBTIType, RegistrationFormData } from '../types/psychometrics';
+import { ArrowLeft, ArrowRight, HeartHandshake, User } from 'lucide-react';
 import { SimpleResultTeaser } from './SimpleResultTeaser';
 import { saveParticipantResult } from '../services/participantService';
 
 interface AssessmentTestProps {
-  participantData: {
-    fullName: string;
-    birthDate: string;
-    phone: string;
-  };
+  participantData: RegistrationFormData;
   onRetake: () => void;
 }
 
@@ -99,15 +95,17 @@ export const AssessmentTest: React.FC<AssessmentTestProps> = ({
     setResultType(calculated);
     setIsFinished(true);
 
-    // Simpan pendaftaran dan hasil tes ke Firebase Firestore
+    // Simpan pendaftaran dan hasil tes ke Server
     saveParticipantResult({
       fullName: participantData.fullName,
       birthDate: participantData.birthDate,
       phone: participantData.phone,
       mbtiType: calculated,
+      testMode: participantData.testMode,
+      partnerData: participantData.partnerData,
       scores: calculatedScores
     }).catch(err => {
-      console.error('Failed saving to Firebase:', err);
+      console.error('Failed saving participant result:', err);
     });
   };
 
@@ -134,6 +132,31 @@ export const AssessmentTest: React.FC<AssessmentTestProps> = ({
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
+      {/* Participant Subheader */}
+      <div className="flex items-center justify-between text-xs px-2">
+        {participantData.testMode === 'couple' ? (
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-1.5 text-rose-700 font-bold">
+              <HeartHandshake className="w-4 h-4 text-rose-500" />
+              <span>Analisis Pasangan: {participantData.fullName} & {participantData.partnerData?.partnerName}</span>
+            </span>
+            <span className="bg-rose-100 text-rose-800 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase">
+              {participantData.partnerData?.relationshipStatus || 'Relasi'}
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-1.5 text-slate-700 font-bold">
+              <User className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Peserta: {participantData.fullName}</span>
+            </span>
+            <span className="bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase">
+              Tes Pribadi
+            </span>
+          </div>
+        )}
+      </div>
+
       {/* Progress Header */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/90">
         <div className="flex items-center justify-between text-xs font-semibold text-slate-500 mb-2">
