@@ -541,11 +541,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
       </div>
 
       {/* Modal Laporan Lengkap Peserta */}
-      <AdminParticipantReportModal
-        participant={selectedParticipant}
-        onClose={() => setSelectedParticipant(null)}
-        onStatusUpdated={handleStatusUpdated}
-      />
+      {selectedParticipant && (
+        <AdminParticipantReportModal
+          participant={selectedParticipant}
+          onClose={() => setSelectedParticipant(null)}
+          onStatusUpdated={handleStatusUpdated}
+        />
+      )}
     </>
   );
 };

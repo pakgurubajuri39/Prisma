@@ -28,22 +28,24 @@ export const AdminParticipantReportModal: React.FC<AdminParticipantReportModalPr
   const [viewMode, setViewMode] = useState<'all' | 'single'>('all');
   const [showPrintTip, setShowPrintTip] = useState(false);
 
+  // Hasilkan ke-22 bab lengkap sekaligus secara presisi
+  const allChapters = useMemo(() => {
+    if (!participant) return [];
+    return TOPICS_LIST.map((topic) =>
+      generateBaselineChapter(participant.mbtiType, topic.kode, participant.fullName)
+    );
+  }, [participant]);
+
+  // Bab aktif untuk mode tinjau tunggal
+  const activeSingleChapter = useMemo(() => {
+    if (!allChapters.length) return null;
+    return allChapters.find((c) => c.kode_bab === selectedTopicCode) || allChapters[0];
+  }, [allChapters, selectedTopicCode]);
+
   if (!participant) return null;
 
   const isCouple = participant.testMode === 'couple' && !!participant.partnerData;
   const meta = PERSONALITY_METAS[participant.mbtiType];
-
-  // Hasilkan ke-22 bab lengkap sekaligus secara presisi
-  const allChapters = useMemo(() => {
-    return TOPICS_LIST.map((topic) =>
-      generateBaselineChapter(participant.mbtiType, topic.kode, participant.fullName)
-    );
-  }, [participant.mbtiType, participant.fullName]);
-
-  // Bab aktif untuk mode tinjau tunggal
-  const activeSingleChapter = useMemo(() => {
-    return allChapters.find((c) => c.kode_bab === selectedTopicCode) || allChapters[0];
-  }, [allChapters, selectedTopicCode]);
 
   // Analisis pasangan jika asesmen relasi
   const coupleAnalysis = isCouple ? getCoupleDetailedAnalysis(
@@ -518,7 +520,7 @@ export const AdminParticipantReportModal: React.FC<AdminParticipantReportModalPr
                 </select>
               </div>
 
-              <ModularCards chapter={activeSingleChapter} />
+              {activeSingleChapter && <ModularCards chapter={activeSingleChapter} />}
             </div>
           )}
 
