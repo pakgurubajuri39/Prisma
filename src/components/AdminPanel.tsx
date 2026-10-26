@@ -297,9 +297,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                         const isCouple = p.testMode === 'couple' && !!p.partnerData;
 
                         const waText = isCouple ? encodeURIComponent(
-                          `Halo Kak *${p.fullName}*, berikut Laporan Lengkap 22 Bab Analisis Pasangan Psikometri Carl Jung 16 Tipe Pak GuruAI untuk Kakak & Pasangan (*${p.partnerData?.partnerName}*).\n\n📌 Tipe Anda: *${p.mbtiType}* (${meta?.name})\n📌 Status: *${p.partnerData?.relationshipStatus}*\n\nBerkas PDF resmi siap kami kirimkan.\n\n@copyright by. Pak GuruAI`
+                          `Halo Kak *${p.fullName}*,\n\nTerima kasih telah mengikuti Asesmen Psikometri Carl Jung 16 Tipe bersama Pak GuruAI untuk Kakak & Pasangan (*${p.partnerData?.partnerName}*)!\n\nHasil lengkap psikometri kamu telah kami verifikasi:\n📌 Tipe Kamu: *${p.mbtiType}* (${meta?.name || ''})\n📌 Status Relasi: *${p.partnerData?.relationshipStatus}*\n\nKami lampirkan *Berkas Resmi Laporan Lengkap 22 Bab Analisis Pasangan (PDF)* dalam pesan ini.\n\n@copyright by. Pak GuruAI`
                         ) : encodeURIComponent(
-                          `Halo Kak *${p.fullName}*, berikut laporan lengkap psikometri Carl Jung 16 Tipe Pak GuruAI untuk tipe *${p.mbtiType}* (${meta?.name})...\n\n@copyright by. Pak GuruAI`
+                          `Halo Kak *${p.fullName}*,\n\nTerima kasih telah mengikuti Tes Psikometri 16 Tipe Carl Jung bersama Pak GuruAI!\n\nHasil lengkap psikometri kamu telah kami verifikasi:\n📌 Tipe Kepribadian: *${p.mbtiType}* (${meta?.name || ''})\n📌 Peran: *${meta?.role || ''}*\n📌 Motto: ${meta?.motto || ''}\n\nKami lampirkan *Berkas Resmi Laporan Psikometri Lengkap 22 Bab (PDF)* dalam pesan ini.\n\n@copyright by. Pak GuruAI`
                         );
 
                         return (
