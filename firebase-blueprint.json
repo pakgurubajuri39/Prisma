@@ -1,0 +1,74 @@
+{
+  "entities": {
+    "Participant": {
+      "title": "Participant",
+      "description": "Data peserta tes psikometri beserta identitas dan hasil tes singkatnya.",
+      "type": "object",
+      "properties": {
+        "fullName": {
+          "type": "string",
+          "description": "Nama lengkap peserta",
+          "maxLength": 100,
+          "minLength": 2
+        },
+        "birthDate": {
+          "type": "string",
+          "description": "Tanggal lahir peserta format YYYY-MM-DD",
+          "maxLength": 20
+        },
+        "phone": {
+          "type": "string",
+          "description": "Nomor WhatsApp / HP peserta",
+          "maxLength": 25,
+          "minLength": 8
+        },
+        "mbtiType": {
+          "type": "string",
+          "description": "Hasil 4-huruf tipe kepribadian (misal INFJ)",
+          "maxLength": 10
+        },
+        "scores": {
+          "type": "object",
+          "description": "Persentase skor tiap dimensi psikometri"
+        },
+        "status": {
+          "type": "string",
+          "description": "Status pengiriman laporan ke peserta (pending / sent)",
+          "enum": ["pending", "sent"]
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Waktu tes diselesaikan"
+        }
+      },
+      "required": ["fullName", "birthDate", "phone", "mbtiType", "createdAt"]
+    },
+    "AdminConfig": {
+      "title": "AdminConfig",
+      "description": "Pengaturan nomor WhatsApp admin dan konfigurasi sistem.",
+      "type": "object",
+      "properties": {
+        "adminPhone": {
+          "type": "string",
+          "description": "Nomor WhatsApp admin tujuan kontak peserta",
+          "maxLength": 30
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Waktu pembaruan konfigurasi"
+        }
+      },
+      "required": ["adminPhone"]
+    }
+  },
+  "firestore": {
+    "/participants/{participantId}": {
+      "schema": "Participant",
+      "description": "Koleksi pendaftaran dan hasil tes peserta psikometri."
+    },
+    "/settings/{settingId}": {
+      "schema": "AdminConfig",
+      "description": "Koleksi konfigurasi admin termasuk nomor WhatsApp admin."
+    }
+  }
+}

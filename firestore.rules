@@ -1,0 +1,51 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidParticipant(data) {
+      return data.keys().hasAll(['fullName', 'birthDate', 'phone', 'mbtiType', 'createdAt'])
+        && data.fullName is string && data.fullName.size() >= 2 && data.fullName.size() <= 120
+        && data.birthDate is string && data.birthDate.size() <= 30
+        && data.phone is string && data.phone.size() >= 8 && data.phone.size() <= 30
+        && data.mbtiType is string && data.mbtiType.size() <= 10
+        && data.createdAt is string && data.createdAt.size() <= 50;
+    }
+
+    // Connection test collection
+    match /test/{testId} {
+      allow read: if true;
+    }
+
+    // Participant collection: participants can register and submit their result, admin can list and view
+    match /participants/{participantId} {
+      allow get: if isValidId(participantId);
+      allow list: if true;
+      allow create: if isValidId(participantId) && isValidParticipant(request.resource.data);
+      allow update: if isValidId(participantId) && (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'adminNotes', 'sentAt'])
+      );
+      allow delete: if isValidId(participantId);
+    }
+
+    // Settings collection: holds admin WhatsApp number
+    match /settings/{settingId} {
+      allow get: if isValidId(settingId);
+      allow list: if true;
+      allow write: if isValidId(settingId) 
+        && request.resource.data.keys().hasAll(['adminPhone'])
+        && request.resource.data.adminPhone is string 
+        && request.resource.data.adminPhone.size() <= 40;
+    }
+
+    // Global Safety Net: default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

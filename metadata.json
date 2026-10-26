@@ -1,0 +1,8 @@
+{
+  "name": "Pak GuruAI - Analisis Psikometri & Konsultan Kepribadian",
+  "description": "Laporan kepribadian komprehensif, mendalam, dan praktis berbasis Tipologi 16 Kepribadian Carl Jung dengan analisis 22 bab modular 4-kartu terstruktur.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
